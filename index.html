@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สารบัญคลิป - จารอู๋อยากสอน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style> .hidden { display: none; } </style>
+</head>
+<body class="bg-gray-100 font-sans p-6">
+
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-red-600 mb-2">จารอู๋อยากสอน (AjOUE.Arch)</h1>
+            <p class="text-gray-600">สารบัญคลิปสำหรับนักศึกษาสถาปัตย์ (อัปเดตอัตโนมัติจาก YouTube)</p>
+        </div>
+
+        <div class="mb-8">
+            <input type="text" id="searchInput" placeholder="ค้นหาคลิปที่สนใจ เช่น Design, Space, Thesis..." 
+                   class="w-full p-4 rounded-lg shadow-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 text-lg">
+        </div>
+
+        <div id="loading" class="text-center text-gray-500 my-4 text-lg animate-pulse">กำลังโหลดข้อมูลจากช่อง จารอู๋อยากสอน...</div>
+        
+        <div id="contentContainer" class="space-y-4"></div>
+    </div>
+
+    <script>
+        // ใส่ API KEY และ CHANNEL ID ของจารอู๋เรียบร้อยแล้ว
+        const API_KEY = 'AIzaSyBU629gf0es1XZzU2enRKbOwjxxAqZpsgs'; 
+        const CHANNEL_ID = 'UCnZEhE3iRB_y7ZPb-qlmzdA';
+        
+        let allPlaylistsData = []; // ตัวแปรเก็บข้อมูลทั้งหมดเพื่อใช้ทำ Search
+
+        // ฟังก์ชันหลักสำหรับดึงข้อมูลจาก YouTube API
+        async function fetchYouTubeData() {
+            try {
+                // 1. ดึงข้อมูล Playlist ทั้งหมดของช่อง
+                const playlistUrl = `https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=${CHANNEL_ID}&maxResults=50&key=${API_KEY}`;
+                const playlistResponse = await fetch(playlistUrl);
+                const playlistData = await playlistResponse.json();
+
+                if (!playlistData.items) {
+                    document.getElementById('loading').innerText = "ไม่พบข้อมูล กรุณาตรวจสอบการตั้งค่า API Key";
+                    return;
+                }
+
+                // 2. ดึงวิดีโอในแต่ละ Playlist
+                for (const playlist of playlistData.items) {
+                    const playlistId = playlist.id;
+                    const playlistTitle = playlist.snippet.title;
+
+                    const videosUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=50&key=${API_KEY}`;
+                    const videosResponse = await fetch(videosUrl);
+                    const videosData = await videosResponse.json();
+
+                    if(videosData.items) {
+                        const videos = videosData.items.map(item => ({
+                            title: item.snippet.title,
+                            // ตัดคลิ
