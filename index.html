@@ -19,22 +19,30 @@
             <h1 class="text-xl md:text-3xl font-extrabold text-red-600 tracking-tight text-center mb-1">
                 จารอู๋อยากสอน (AjOUE.Arch)
             </h1>
+
+            <div class="text-center mb-1">
+                <button id="toggleMenuBtn" onclick="toggleMenu()" class="inline-flex items-center justify-center gap-1 text-[10px] md:text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1 rounded-full shadow-sm border border-gray-200 transition">
+                    <span>🔽</span> ซ่อนแถบค้นหาและสารบัญ
+                </button>
+            </div>
             
-            <div class="mt-2 md:mt-4 mb-3">
-                <input type="text" id="searchInput" placeholder="พิมพ์ค้นหาคลิป หรือชื่อ Playlist (เช่น Case Study, Design)..." 
-                       class="w-full bg-gray-100 border border-transparent focus:bg-white focus:border-red-400 rounded-lg px-4 py-1.5 md:py-2.5 text-sm md:text-base outline-none transition shadow-inner">
-            </div>
+            <div id="menuSection" class="mt-2 md:mt-3">
+                <div class="mb-3">
+                    <input type="text" id="searchInput" placeholder="พิมพ์ค้นหาคลิป หรือชื่อ Playlist (เช่น Case Study, Design)..." 
+                           class="w-full bg-gray-100 border border-transparent focus:bg-white focus:border-red-400 rounded-lg px-4 py-1.5 md:py-2.5 text-sm md:text-base outline-none transition shadow-inner">
+                </div>
 
-            <div class="flex items-start gap-2 mb-3">
-                <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase shrink-0 mt-1 md:mt-1.5">ยอดฮิต :</span>
-                <div id="keywordContainer" class="flex flex-wrap gap-1.5 md:gap-2">
-                    </div>
-            </div>
+                <div class="flex items-start gap-2 mb-3">
+                    <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase shrink-0 mt-1 md:mt-1.5">ยอดฮิต :</span>
+                    <div id="keywordContainer" class="flex flex-wrap gap-1.5 md:gap-2">
+                        </div>
+                </div>
 
-            <div class="flex items-start gap-2 pt-2 border-t border-gray-100">
-                <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase shrink-0 mt-1">สารบัญ :</span>
-                <div id="quickLinksContainer" class="flex flex-wrap gap-1.5 md:gap-2 pb-1">
-                    </div>
+                <div class="flex items-start gap-2 pt-2 border-t border-gray-100 pb-1">
+                    <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase shrink-0 mt-1">สารบัญ :</span>
+                    <div id="quickLinksContainer" class="flex flex-wrap gap-1.5 md:gap-2">
+                        </div>
+                </div>
             </div>
 
         </div>
@@ -58,8 +66,21 @@
         const UPLOADS_PLAYLIST_ID = 'UUnZEhE3iRB_y7ZPb-qlmzdA'; 
         
         let allPlaylistsData = []; 
-        // อัปเดตคำค้นหาตามที่อาจารย์ต้องการ
         const keywords = ['Design', 'Case study', 'Space', 'Presentation', 'Thesis', 'Interior', 'Urban', 'Construction'];
+
+        // ฟังก์ชันสำหรับเปิด/ซ่อนเมนู
+        function toggleMenu() {
+            const menu = document.getElementById('menuSection');
+            const btn = document.getElementById('toggleMenuBtn');
+
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                btn.innerHTML = '<span>🔽</span> ซ่อนแถบค้นหาและสารบัญ';
+            } else {
+                menu.classList.add('hidden');
+                btn.innerHTML = '<span>▶️</span> แสดงแถบค้นหาและสารบัญ';
+            }
+        }
 
         async function fetchAllPages(urlPart) {
             let items = [];
@@ -178,6 +199,11 @@
                 btn.onclick = () => {
                     document.getElementById('searchInput').value = kw;
                     renderContent(kw);
+                    // เสริม: ถ้าดูบนมือถือ พอกดค้นหาแล้วให้ซ่อนเมนูอัตโนมัติ จะได้เห็นคลิปเลย
+                    if(window.innerWidth < 768) {
+                        document.getElementById('menuSection').classList.add('hidden');
+                        document.getElementById('toggleMenuBtn').innerHTML = '<span>▶️</span> แสดงแถบค้นหาและสารบัญ';
+                    }
                 };
                 container.appendChild(btn);
             });
@@ -195,6 +221,11 @@
                 link.onclick = () => {
                     document.getElementById('searchInput').value = "";
                     renderContent("");
+                    // เสริม: ถ้าดูบนมือถือ พอกดทางลัดแล้วให้ซ่อนเมนูอัตโนมัติ จะได้เห็นคลิปเลย
+                    if(window.innerWidth < 768) {
+                        document.getElementById('menuSection').classList.add('hidden');
+                        document.getElementById('toggleMenuBtn').innerHTML = '<span>▶️</span> แสดงแถบค้นหาและสารบัญ';
+                    }
                 };
                 container.appendChild(link);
             });
@@ -235,8 +266,8 @@
 
                 const sectionDiv = document.createElement('div');
                 sectionDiv.id = playlist.id; 
-                // เพิ่มระยะขอบบนเผื่อความสูงของแถบเมนู (Sticky Header) ที่มันยาวขึ้นเพราะ Wrap
-                sectionDiv.className = 'scroll-mt-56 md:scroll-mt-48 pt-2'; 
+                // ตั้งค่าระยะเผื่อเวลาเลื่อนหน้าจอ ให้พอดีตอนซ่อน/แสดงเมนู
+                sectionDiv.className = 'scroll-mt-40 md:scroll-mt-48 pt-2'; 
                 
                 const headerDiv = document.createElement('div');
                 headerDiv.className = 'flex items-baseline gap-2 md:gap-3 mb-3 md:mb-4 border-b-2 border-red-500 pb-1.5 md:pb-2 inline-block';
