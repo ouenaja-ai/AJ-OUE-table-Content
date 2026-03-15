@@ -3,63 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>สารบัญคลิป - จารอู๋อยากสอน</title>
+    <title>จารอู๋อยากสอน (AjOUE.Arch) - สารบัญคลิป</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* ซ่อน Scrollbar แนวนอนให้ดูสะอาดตาคล้ายแอปมือถือ */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        /* เอฟเฟกต์การพับ/กาง */
-        .hidden { display: none !important; }
+        body { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
-<body class="bg-gray-50 font-sans min-h-screen pb-12">
+<body class="bg-gray-50 font-sans min-h-screen text-gray-800">
 
-    <div class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-6">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-red-600 mb-1 tracking-tight">AjOUE.Arch</h1>
-            <p class="text-gray-500 text-sm md:text-base mb-4">สารบัญคลิปจารอู๋อยากสอน ค้นหาง่าย อัปเดตอัตโนมัติ</p>
-
-            <div class="relative mb-4">
-                <input type="text" id="searchInput" placeholder="พิมพ์ค้นหา เช่น Design, Space, Thesis..." 
-                       class="w-full bg-gray-100 text-gray-800 rounded-full px-6 py-3 outline-none focus:ring-2 focus:ring-red-500 transition shadow-inner">
+    <div class="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-200 w-full transition-all">
+        <div class="max-w-6xl mx-auto px-3 py-2 md:py-4">
+            
+            <h1 class="text-xl md:text-3xl font-extrabold text-red-600 tracking-tight text-center mb-1">
+                จารอู๋อยากสอน (AjOUE.Arch)
+            </h1>
+            
+            <div class="mt-2 md:mt-4 mb-2">
+                <input type="text" id="searchInput" placeholder="พิมพ์ค้นหาคลิป หรือชื่อ Playlist (เช่น Case Study, Design)..." 
+                       class="w-full bg-gray-100 border border-transparent focus:bg-white focus:border-red-400 rounded-lg px-4 py-1.5 md:py-2.5 text-sm md:text-base outline-none transition shadow-inner">
             </div>
 
-            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 mb-2">
-                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider shrink-0">ยอดฮิต :</span>
-                <div id="keywordContainer" class="flex gap-2 shrink-0">
+            <div class="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 mb-2">
+                <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase shrink-0 hidden md:block">คำค้นหายอดฮิต :</span>
+                <div id="keywordContainer" class="flex flex-wrap gap-1.5 md:gap-2">
                     </div>
             </div>
 
             <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pt-2 border-t border-gray-100">
-                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider shrink-0">ไปที่หมวด :</span>
-                <div id="quickLinksContainer" class="flex gap-2 shrink-0 pb-1">
+                <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase shrink-0">สารบัญ :</span>
+                <div id="quickLinksContainer" class="flex gap-1.5 shrink-0 pb-1">
                     </div>
             </div>
+
         </div>
     </div>
 
-    <div class="max-w-6xl mx-auto px-4 mt-8">
-        <div id="loading" class="flex flex-col items-center justify-center py-12 text-gray-400">
-            <svg class="animate-spin h-8 w-8 text-red-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <div class="max-w-6xl mx-auto px-3 md:px-4 py-6 md:py-8">
+        <div id="loading" class="flex flex-col items-center justify-center py-10 text-gray-400">
+            <svg class="animate-spin h-8 w-8 text-red-500 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p class="animate-pulse">กำลังโหลดคลิปทั้งหมดจาก YouTube...</p>
-            <p class="text-xs mt-2">อาจใช้เวลาสักครู่ เนื่องจากดึงข้อมูลทุกคลิปในช่อง</p>
+            <p class="animate-pulse text-sm md:text-base">กำลังจัดเรียงข้อมูลคลิปทั้งหมด...</p>
         </div>
         
-        <div id="contentContainer" class="space-y-10"></div>
+        <div id="contentContainer" class="space-y-8 md:space-y-12 pb-12"></div>
     </div>
 
     <script>
         const API_KEY = 'AIzaSyBU629gf0es1XZzU2enRKbOwjxxAqZpsgs'; 
         const CHANNEL_ID = 'UCnZEhE3iRB_y7ZPb-qlmzdA';
+        // รหัส Playlist ของวิดีโออัปโหลดทั้งหมด (เปลี่ยน UC เป็น UU)
+        const UPLOADS_PLAYLIST_ID = 'UUnZEhE3iRB_y7ZPb-qlmzdA'; 
         
         let allPlaylistsData = []; 
-        const keywords = ['Design', 'Space', 'Case Study', 'Thesis', 'วิเคราะห์', 'Lecture', 'Interior', 'Urban', 'Presentation', 'Construction'];
+        const keywords = ['Case Study', 'Design', 'Space', 'Thesis', 'Lecture', 'Interior', 'Presentation', 'Vlog'];
 
-        // ฟังก์ชันช่วยดึงข้อมูลแบบทะลุ 50 คลิป (Pagination)
+        // ฟังก์ชันดึงข้อมูลแบบทะลุ 50 คลิป
         async function fetchAllPages(urlPart) {
             let items = [];
             let nextPageToken = '';
@@ -83,43 +85,89 @@
                     return;
                 }
 
-                // 2. ดึงวิดีโอในแต่ละ Playlist (ทะลุ 50 คลิปต่อ Playlist)
+                // เก็บ ID วิดีโอทั้งหมดที่อยู่ใน Playlist แล้ว
+                const videosInPlaylists = new Set();
+
+                // 2. ดึงวิดีโอในแต่ละ Playlist
                 for (const playlist of playlistItems) {
                     const playlistId = playlist.id;
                     const playlistTitle = playlist.snippet.title;
 
-                    // ใช้ contentDetails เพื่อให้ได้วันที่คลิปลงจริงๆ แบบแม่นยำ
                     const rawVideos = await fetchAllPages(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${playlistId}`);
 
-                    const videos = rawVideos.map(item => ({
-                        title: item.snippet.title,
-                        url: `https://www.youtube.com/watch?v=${item.snippet.resourceId.videoId}`,
-                        thumbUrl: item.snippet.thumbnails.maxres ? item.snippet.thumbnails.maxres.url : (item.snippet.thumbnails.medium ? item.snippet.thumbnails.medium.url : 'https://via.placeholder.com/320x180?text=No+Thumbnail'),
-                        // เก็บวันที่เพื่อเอามาเรียงลำดับ
-                        publishedAt: new Date(item.contentDetails.videoPublishedAt || item.snippet.publishedAt)
-                    })).filter(video => video.title !== 'Private video' && video.title !== 'Deleted video');
+                    const videos = rawVideos.map(item => {
+                        const videoId = item.snippet.resourceId.videoId;
+                        videosInPlaylists.add(videoId); // จำไว้ว่าคลิปนี้มีหมวดหมู่แล้ว
+                        
+                        // ตัด Description เอาเฉพาะข้อความก่อนการเคาะบรรทัด (Enter)
+                        let desc = (item.snippet.description || '').split('\n')[0].trim();
+                        if (!desc) desc = 'ไม่มีคำอธิบายเพิ่มเติม';
 
-                    // ** จัดเรียงคลิป: วันที่ใหม่สุด ไป เก่าสุด **
+                        return {
+                            videoId: videoId,
+                            title: item.snippet.title,
+                            url: `https://www.youtube.com/watch?v=${videoId}`,
+                            thumbUrl: item.snippet.thumbnails.maxres ? item.snippet.thumbnails.maxres.url : (item.snippet.thumbnails.medium ? item.snippet.thumbnails.medium.url : 'https://via.placeholder.com/320x180?text=No+Thumbnail'),
+                            publishedAt: new Date(item.contentDetails.videoPublishedAt || item.snippet.publishedAt),
+                            description: desc
+                        };
+                    }).filter(video => video.title !== 'Private video' && video.title !== 'Deleted video');
+
                     videos.sort((a, b) => b.publishedAt - a.publishedAt);
 
                     if(videos.length > 0) {
                         allPlaylistsData.push({
-                            id: `playlist-${playlistId}`, // ใช้สำหรับทำลิงก์เลื่อนหน้าจอ
+                            id: `playlist-${playlistId}`,
                             categoryName: playlistTitle,
                             videos: videos
                         });
                     }
                 }
 
-                // ** จัดเรียง Playlist: ตามตัวอักษร ก-ฮ (A-Z) **
-                allPlaylistsData.sort((a, b) => a.categoryName.localeCompare(b.categoryName, 'th'));
+                // 3. ดึงคลิป "อื่นๆ" (ที่ไม่ได้อยู่ใน Playlist ไหนเลย)
+                const allUploads = await fetchAllPages(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${UPLOADS_PLAYLIST_ID}`);
+                const orphanVideos = [];
+
+                allUploads.forEach(item => {
+                    const videoId = item.snippet.resourceId.videoId;
+                    // ถ้าคลิปนี้ยังไม่มี Playlist
+                    if (!videosInPlaylists.has(videoId) && item.snippet.title !== 'Private video' && item.snippet.title !== 'Deleted video') {
+                        let desc = (item.snippet.description || '').split('\n')[0].trim();
+                        if (!desc) desc = 'ไม่มีคำอธิบายเพิ่มเติม';
+
+                        orphanVideos.push({
+                            videoId: videoId,
+                            title: item.snippet.title,
+                            url: `https://www.youtube.com/watch?v=${videoId}`,
+                            thumbUrl: item.snippet.thumbnails.maxres ? item.snippet.thumbnails.maxres.url : (item.snippet.thumbnails.medium ? item.snippet.thumbnails.medium.url : 'https://via.placeholder.com/320x180?text=No+Thumbnail'),
+                            publishedAt: new Date(item.contentDetails.videoPublishedAt || item.snippet.publishedAt),
+                            description: desc
+                        });
+                    }
+                });
+
+                if (orphanVideos.length > 0) {
+                    orphanVideos.sort((a, b) => b.publishedAt - a.publishedAt);
+                    allPlaylistsData.push({
+                        id: `playlist-others`,
+                        categoryName: 'หมวดอื่นๆ (คลิปทั่วไป)',
+                        videos: orphanVideos
+                    });
+                }
+
+                // เรียงลำดับ Playlist ตามตัวอักษร (เอา "อื่นๆ" ไว้ล่างสุด)
+                allPlaylistsData.sort((a, b) => {
+                    if(a.categoryName === 'หมวดอื่นๆ (คลิปทั่วไป)') return 1;
+                    if(b.categoryName === 'หมวดอื่นๆ (คลิปทั่วไป)') return -1;
+                    return a.categoryName.localeCompare(b.categoryName, 'th');
+                });
 
                 document.getElementById('loading').style.display = 'none';
                 renderUI(); 
 
             } catch (error) {
                 console.error("Error:", error);
-                document.getElementById('loading').innerHTML = "<p class='text-red-500'>เกิดข้อผิดพลาดในการโหลดข้อมูล โควต้า API อาจจะเต็ม หรือติดปัญหาเครือข่าย</p>";
+                document.getElementById('loading').innerHTML = "<p class='text-red-500'>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>";
             }
         }
 
@@ -129,12 +177,11 @@
             renderContent("");
         }
 
-        // สร้างปุ่ม Keyword (ด้านบน)
         function renderKeywords() {
             const container = document.getElementById('keywordContainer');
             keywords.forEach(kw => {
                 const btn = document.createElement('button');
-                btn.className = 'px-4 py-1.5 bg-gray-200 hover:bg-red-500 hover:text-white text-gray-700 text-sm rounded-full transition whitespace-nowrap';
+                btn.className = 'px-3 py-1 bg-gray-200 hover:bg-red-500 hover:text-white text-gray-700 text-[10px] md:text-xs rounded-full transition';
                 btn.innerText = kw;
                 btn.onclick = () => {
                     document.getElementById('searchInput').value = kw;
@@ -144,7 +191,6 @@
             });
         }
 
-        // สร้างปุ่ม Playlist ทางลัด (ด้านบน)
         function renderQuickLinks() {
             const container = document.getElementById('quickLinksContainer');
             container.innerHTML = '';
@@ -152,9 +198,8 @@
             allPlaylistsData.forEach(playlist => {
                 const link = document.createElement('a');
                 link.href = `#${playlist.id}`;
-                link.className = 'px-3 py-1 bg-white border border-gray-300 hover:border-red-500 hover:text-red-500 text-gray-600 text-sm rounded-lg transition whitespace-nowrap shadow-sm';
+                link.className = 'px-2.5 py-1 bg-white border border-gray-300 hover:border-red-500 hover:text-red-500 text-gray-600 text-[10px] md:text-xs rounded-md transition whitespace-nowrap';
                 link.innerText = playlist.categoryName;
-                // เมื่อคลิกทางลัด ให้เคลียร์ช่องค้นหาเพื่อแสดงทุกหมวด
                 link.onclick = () => {
                     document.getElementById('searchInput').value = "";
                     renderContent("");
@@ -163,56 +208,83 @@
             });
         }
 
-        // สร้างหน้าจอแสดงคลิป (Grid สไตล์ Pinterest)
+        // ระบบคลิกการ์ด: คลิก 1 โชว์รายละเอียด -> คลิก 2 เปิดวิดีโอ
+        window.handleCardClick = function(element, url) {
+            const descDiv = element.querySelector('.video-desc');
+            const btnText = element.querySelector('.btn-text');
+            
+            if (descDiv.classList.contains('hidden')) {
+                // ครั้งแรก: เปิด Description
+                descDiv.classList.remove('hidden');
+                btnText.innerHTML = 'คลิกอีกครั้งเพื่อเล่นคลิป ▶';
+                btnText.classList.remove('bg-black/80', 'text-white');
+                btnText.classList.add('bg-red-600', 'text-white', 'font-bold', 'animate-pulse');
+            } else {
+                // ครั้งที่สอง: ไปที่ YouTube
+                window.open(url, '_blank');
+            }
+        };
+
         function renderContent(filterText = "") {
             const container = document.getElementById('contentContainer');
             container.innerHTML = ''; 
 
+            const searchText = filterText.toLowerCase();
+
             allPlaylistsData.forEach(playlist => {
-                // กรองคลิปตามที่ค้นหา
-                const filteredVideos = playlist.videos.filter(v => 
-                    v.title.toLowerCase().includes(filterText.toLowerCase())
-                );
+                let filteredVideos = [];
+
+                // 1. ถ้าค้นหาเจอ "ชื่อ Playlist" ให้แสดงคลิปทั้งหมดในหมวดนั้นเลย
+                if (playlist.categoryName.toLowerCase().includes(searchText)) {
+                    filteredVideos = playlist.videos;
+                } else {
+                    // 2. ถ้าไม่ตรงชื่อ Playlist ให้ไปค้นในชื่อคลิป
+                    filteredVideos = playlist.videos.filter(v => 
+                        v.title.toLowerCase().includes(searchText)
+                    );
+                }
 
                 if (filteredVideos.length === 0) return;
 
                 const sectionDiv = document.createElement('div');
-                sectionDiv.id = playlist.id; // ไอดีสำหรับกระโดดมาหา (Anchor)
-                sectionDiv.className = 'pt-4 scroll-mt-48'; // scroll-mt เผื่อที่ว่างด้านบนตอนโดดมาหา
+                sectionDiv.id = playlist.id; 
+                // scroll-mt-40 หรือ 48 เพื่อให้เวลาโดดมาแล้ว ไม่โดน Header ด้านบนบัง
+                sectionDiv.className = 'scroll-mt-48 md:scroll-mt-40 pt-2'; 
                 
-                // หัวข้อ Playlist
                 const headerDiv = document.createElement('div');
-                headerDiv.className = 'flex items-baseline gap-3 mb-4 border-b-2 border-red-500 pb-2 inline-block';
+                headerDiv.className = 'flex items-baseline gap-2 md:gap-3 mb-3 md:mb-4 border-b-2 border-red-500 pb-1.5 md:pb-2 inline-block';
                 headerDiv.innerHTML = `
-                    <h2 class="text-2xl font-bold text-gray-800">${playlist.categoryName}</h2>
-                    <span class="text-sm font-medium text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">${filteredVideos.length} คลิป</span>
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800">${playlist.categoryName}</h2>
+                    <span class="text-xs font-medium text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">${filteredVideos.length} คลิป</span>
                 `;
                 
-                // กล่องใส่คลิป (Grid รองรับมือถือ 1 จอ, แท็บเล็ต 2 จอ, คอม 3-4 จอ)
                 const videoGrid = document.createElement('div');
-                videoGrid.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6';
+                videoGrid.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6';
 
                 filteredVideos.forEach(video => {
-                    // แปลงวันที่ให้อ่านง่าย
-                    const dateStr = video.publishedAt.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+                    const dateStr = video.publishedAt.toLocaleDateString('th-TH', { year: '2-digit', month: 'short', day: 'numeric' });
 
-                    const videoCard = document.createElement('a');
-                    videoCard.href = video.url;
-                    videoCard.target = '_blank';
-                    videoCard.className = 'group block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1';
+                    const videoCard = document.createElement('div');
+                    // ใช้ onclick แทน a href เพื่องทำระบบ 2 clicks
+                    videoCard.setAttribute('onclick', `handleCardClick(this, '${video.url}')`);
+                    videoCard.className = 'group cursor-pointer flex flex-col bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-gray-100 h-full';
                     
                     videoCard.innerHTML = `
-                        <div class="relative overflow-hidden aspect-video bg-gray-200">
-                            <img src="${video.thumbUrl}" alt="Thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-                            <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition duration-300"></div>
-                            <div class="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">ดูคลิป ▶</div>
+                        <div class="relative overflow-hidden aspect-video bg-gray-200 shrink-0">
+                            <img src="${video.thumbUrl}" alt="Thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition duration-300"></div>
+                            <div class="btn-text absolute bottom-2 right-2 bg-black/80 text-white text-[10px] md:text-xs px-2 py-1.5 rounded backdrop-blur-sm transition-all shadow-sm">
+                                กดเพื่อดูรายละเอียด
+                            </div>
                         </div>
-                        <div class="p-4">
-                            <h3 class="text-sm md:text-base font-semibold text-gray-800 leading-tight line-clamp-2 group-hover:text-red-600 transition">${video.title}</h3>
-                            <p class="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                อัปโหลดเมื่อ ${dateStr}
+                        <div class="p-3 md:p-4 flex flex-col flex-grow">
+                            <h3 class="text-sm md:text-base font-semibold text-gray-800 leading-snug line-clamp-2 group-hover:text-red-600 transition">${video.title}</h3>
+                            <p class="text-[10px] md:text-xs text-gray-400 mt-1.5 flex items-center gap-1">
+                                📅 วันที่ลง: ${dateStr}
                             </p>
+                            <div class="video-desc hidden mt-3 text-xs md:text-sm text-gray-600 bg-gray-50 p-2.5 rounded border-l-[3px] border-red-400">
+                                ${video.description}
+                            </div>
                         </div>
                     `;
                     videoGrid.appendChild(videoCard);
@@ -224,12 +296,10 @@
             });
         }
 
-        // ระบบค้นหาเมื่อพิมพ์
         document.getElementById('searchInput').addEventListener('input', (e) => {
             renderContent(e.target.value);
         });
 
-        // เริ่มดึงข้อมูล
         fetchYouTubeData();
     </script>
 </body>
