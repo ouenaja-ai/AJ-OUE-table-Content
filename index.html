@@ -57,4 +57,84 @@
                     if(videosData.items) {
                         const videos = videosData.items.map(item => ({
                             title: item.snippet.title,
-                            // ตัดคลิ
+                            // ตัดคลิปที่โดนลบหรือซ่อนออกไป
+                            url: `https://www.youtube.com/watch?v=${item.snippet.resourceId.videoId}`,
+                            thumbUrl: item.snippet.thumbnails.medium ? item.snippet.thumbnails.medium.url : 'https://via.placeholder.com/320x180?text=No+Thumbnail'
+                        })).filter(video => video.title !== 'Private video' && video.title !== 'Deleted video');
+
+                        // เก็บข้อมูลไว้เฉพาะ Playlist ที่มีคลิป
+                        if(videos.length > 0) {
+                            allPlaylistsData.push({
+                                categoryName: playlistTitle,
+                                videos: videos
+                            });
+                        }
+                    }
+                }
+
+                document.getElementById('loading').style.display = 'none';
+                renderContent(""); // โหลดเสร็จแล้วให้แสดงผลเลย
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                document.getElementById('loading').innerText = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
+            }
+        }
+
+        // ฟังก์ชันสร้างหน้าจอ
+        function renderContent(filterText = "") {
+            const container = document.getElementById('contentContainer');
+            container.innerHTML = ''; 
+
+            allPlaylistsData.forEach(playlist => {
+                // กรองวิดีโอตามคำค้นหา
+                const filteredVideos = playlist.videos.filter(v => 
+                    v.title.toLowerCase().includes(filterText.toLowerCase())
+                );
+
+                if (filteredVideos.length === 0) return; // ไม่มีคลิปที่ตรงกับที่ค้นหา ให้ข้ามไป
+
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'bg-white rounded-lg shadow-md overflow-hidden';
+                
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'p-4 bg-gray-800 text-white cursor-pointer font-bold text-xl flex justify-between items-center transition hover:bg-gray-700';
+                headerDiv.innerHTML = `${playlist.categoryName} <span class="text-sm bg-red-600 px-2 py-1 rounded">${filteredVideos.length} คลิป</span>`;
+                
+                const videoGrid = document.createElement('div');
+                videoGrid.className = 'p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4';
+                
+                // ถ้าค้นหาอยู่ ให้กาง Dropdown อัตโนมัติ ถ้าไม่ได้ค้นหาให้พับเก็บไว้
+                if (filterText === "") videoGrid.classList.add('hidden');
+
+                // ตั้งค่าให้คลิกเพื่อกาง/พับ Playlist
+                headerDiv.onclick = () => videoGrid.classList.toggle('hidden');
+
+                filteredVideos.forEach(video => {
+                    const videoCard = document.createElement('a');
+                    videoCard.href = video.url;
+                    videoCard.target = '_blank';
+                    videoCard.className = 'block hover:bg-gray-50 p-2 rounded transition border border-gray-100 hover:shadow-lg';
+                    videoCard.innerHTML = `
+                        <img src="${video.thumbUrl}" alt="Thumbnail" class="w-full rounded-md mb-2 object-cover aspect-video">
+                        <h3 class="text-sm font-semibold text-gray-800 leading-tight">${video.title}</h3>
+                    `;
+                    videoGrid.appendChild(videoCard);
+                });
+
+                categoryDiv.appendChild(headerDiv);
+                categoryDiv.appendChild(videoGrid);
+                container.appendChild(categoryDiv);
+            });
+        }
+
+        // ตั้งค่าระบบค้นหาแบบ Real-time
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            renderContent(e.target.value);
+        });
+
+        // เริ่มต้นดึงข้อมูลทันทีที่เปิดเว็บ
+        fetchYouTubeData();
+    </script>
+</body>
+</html>
