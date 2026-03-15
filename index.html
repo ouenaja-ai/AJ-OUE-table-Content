@@ -1,140 +1,79 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>สารบัญคลิป - จารอู๋อยากสอน</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style> .hidden { display: none; } </style>
+    <style>
+        /* ซ่อน Scrollbar แนวนอนให้ดูสะอาดตาคล้ายแอปมือถือ */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* เอฟเฟกต์การพับ/กาง */
+        .hidden { display: none !important; }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans p-6">
+<body class="bg-gray-50 font-sans min-h-screen pb-12">
 
-    <div class="max-w-4xl mx-auto">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-red-600 mb-2">จารอู๋อยากสอน (AjOUE.Arch)</h1>
-            <p class="text-gray-600">สารบัญคลิปสำหรับนักศึกษาสถาปัตย์ (อัปเดตอัตโนมัติจาก YouTube)</p>
+    <div class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-red-600 mb-1 tracking-tight">AjOUE.Arch</h1>
+            <p class="text-gray-500 text-sm md:text-base mb-4">สารบัญคลิปจารอู๋อยากสอน ค้นหาง่าย อัปเดตอัตโนมัติ</p>
+
+            <div class="relative mb-4">
+                <input type="text" id="searchInput" placeholder="พิมพ์ค้นหา เช่น Design, Space, Thesis..." 
+                       class="w-full bg-gray-100 text-gray-800 rounded-full px-6 py-3 outline-none focus:ring-2 focus:ring-red-500 transition shadow-inner">
+            </div>
+
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 mb-2">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider shrink-0">ยอดฮิต :</span>
+                <div id="keywordContainer" class="flex gap-2 shrink-0">
+                    </div>
+            </div>
+
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pt-2 border-t border-gray-100">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider shrink-0">ไปที่หมวด :</span>
+                <div id="quickLinksContainer" class="flex gap-2 shrink-0 pb-1">
+                    </div>
+            </div>
         </div>
+    </div>
 
-        <div class="mb-8">
-            <input type="text" id="searchInput" placeholder="ค้นหาคลิปที่สนใจ เช่น Design, Space, Thesis..." 
-                   class="w-full p-4 rounded-lg shadow-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 text-lg">
+    <div class="max-w-6xl mx-auto px-4 mt-8">
+        <div id="loading" class="flex flex-col items-center justify-center py-12 text-gray-400">
+            <svg class="animate-spin h-8 w-8 text-red-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="animate-pulse">กำลังโหลดคลิปทั้งหมดจาก YouTube...</p>
+            <p class="text-xs mt-2">อาจใช้เวลาสักครู่ เนื่องจากดึงข้อมูลทุกคลิปในช่อง</p>
         </div>
-
-        <div id="loading" class="text-center text-gray-500 my-4 text-lg animate-pulse">กำลังโหลดข้อมูลจากช่อง จารอู๋อยากสอน...</div>
         
-        <div id="contentContainer" class="space-y-4"></div>
+        <div id="contentContainer" class="space-y-10"></div>
     </div>
 
     <script>
-        // ใส่ API KEY และ CHANNEL ID ของจารอู๋เรียบร้อยแล้ว
         const API_KEY = 'AIzaSyBU629gf0es1XZzU2enRKbOwjxxAqZpsgs'; 
         const CHANNEL_ID = 'UCnZEhE3iRB_y7ZPb-qlmzdA';
         
-        let allPlaylistsData = []; // ตัวแปรเก็บข้อมูลทั้งหมดเพื่อใช้ทำ Search
+        let allPlaylistsData = []; 
+        const keywords = ['Design', 'Space', 'Thesis', 'Lecture', 'Interior', 'รีวิว', 'นำเสนอ', 'Vlog'];
 
-        // ฟังก์ชันหลักสำหรับดึงข้อมูลจาก YouTube API
+        // ฟังก์ชันช่วยดึงข้อมูลแบบทะลุ 50 คลิป (Pagination)
+        async function fetchAllPages(urlPart) {
+            let items = [];
+            let nextPageToken = '';
+            do {
+                const url = `${urlPart}&maxResults=50&key=${API_KEY}${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if(data.items) items.push(...data.items);
+                nextPageToken = data.nextPageToken;
+            } while (nextPageToken);
+            return items;
+        }
+
         async function fetchYouTubeData() {
             try {
-                // 1. ดึงข้อมูล Playlist ทั้งหมดของช่อง
-                const playlistUrl = `https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=${CHANNEL_ID}&maxResults=50&key=${API_KEY}`;
-                const playlistResponse = await fetch(playlistUrl);
-                const playlistData = await playlistResponse.json();
-
-                if (!playlistData.items) {
-                    document.getElementById('loading').innerText = "ไม่พบข้อมูล กรุณาตรวจสอบการตั้งค่า API Key";
-                    return;
-                }
-
-                // 2. ดึงวิดีโอในแต่ละ Playlist
-                for (const playlist of playlistData.items) {
-                    const playlistId = playlist.id;
-                    const playlistTitle = playlist.snippet.title;
-
-                    const videosUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=50&key=${API_KEY}`;
-                    const videosResponse = await fetch(videosUrl);
-                    const videosData = await videosResponse.json();
-
-                    if(videosData.items) {
-                        const videos = videosData.items.map(item => ({
-                            title: item.snippet.title,
-                            // ตัดคลิปที่โดนลบหรือซ่อนออกไป
-                            url: `https://www.youtube.com/watch?v=${item.snippet.resourceId.videoId}`,
-                            thumbUrl: item.snippet.thumbnails.medium ? item.snippet.thumbnails.medium.url : 'https://via.placeholder.com/320x180?text=No+Thumbnail'
-                        })).filter(video => video.title !== 'Private video' && video.title !== 'Deleted video');
-
-                        // เก็บข้อมูลไว้เฉพาะ Playlist ที่มีคลิป
-                        if(videos.length > 0) {
-                            allPlaylistsData.push({
-                                categoryName: playlistTitle,
-                                videos: videos
-                            });
-                        }
-                    }
-                }
-
-                document.getElementById('loading').style.display = 'none';
-                renderContent(""); // โหลดเสร็จแล้วให้แสดงผลเลย
-
-            } catch (error) {
-                console.error("Error fetching data:", error);
-                document.getElementById('loading').innerText = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
-            }
-        }
-
-        // ฟังก์ชันสร้างหน้าจอ
-        function renderContent(filterText = "") {
-            const container = document.getElementById('contentContainer');
-            container.innerHTML = ''; 
-
-            allPlaylistsData.forEach(playlist => {
-                // กรองวิดีโอตามคำค้นหา
-                const filteredVideos = playlist.videos.filter(v => 
-                    v.title.toLowerCase().includes(filterText.toLowerCase())
-                );
-
-                if (filteredVideos.length === 0) return; // ไม่มีคลิปที่ตรงกับที่ค้นหา ให้ข้ามไป
-
-                const categoryDiv = document.createElement('div');
-                categoryDiv.className = 'bg-white rounded-lg shadow-md overflow-hidden';
-                
-                const headerDiv = document.createElement('div');
-                headerDiv.className = 'p-4 bg-gray-800 text-white cursor-pointer font-bold text-xl flex justify-between items-center transition hover:bg-gray-700';
-                headerDiv.innerHTML = `${playlist.categoryName} <span class="text-sm bg-red-600 px-2 py-1 rounded">${filteredVideos.length} คลิป</span>`;
-                
-                const videoGrid = document.createElement('div');
-                videoGrid.className = 'p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4';
-                
-                // ถ้าค้นหาอยู่ ให้กาง Dropdown อัตโนมัติ ถ้าไม่ได้ค้นหาให้พับเก็บไว้
-                if (filterText === "") videoGrid.classList.add('hidden');
-
-                // ตั้งค่าให้คลิกเพื่อกาง/พับ Playlist
-                headerDiv.onclick = () => videoGrid.classList.toggle('hidden');
-
-                filteredVideos.forEach(video => {
-                    const videoCard = document.createElement('a');
-                    videoCard.href = video.url;
-                    videoCard.target = '_blank';
-                    videoCard.className = 'block hover:bg-gray-50 p-2 rounded transition border border-gray-100 hover:shadow-lg';
-                    videoCard.innerHTML = `
-                        <img src="${video.thumbUrl}" alt="Thumbnail" class="w-full rounded-md mb-2 object-cover aspect-video">
-                        <h3 class="text-sm font-semibold text-gray-800 leading-tight">${video.title}</h3>
-                    `;
-                    videoGrid.appendChild(videoCard);
-                });
-
-                categoryDiv.appendChild(headerDiv);
-                categoryDiv.appendChild(videoGrid);
-                container.appendChild(categoryDiv);
-            });
-        }
-
-        // ตั้งค่าระบบค้นหาแบบ Real-time
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            renderContent(e.target.value);
-        });
-
-        // เริ่มต้นดึงข้อมูลทันทีที่เปิดเว็บ
-        fetchYouTubeData();
-    </script>
-</body>
-</html>
+                // 1. ดึง Playlist ทั้งหมดในช่อง
+                const playlistItems = await fetchAllPages(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=${CHANNEL_ID}`);
