@@ -20,20 +20,20 @@
                 จารอู๋อยากสอน (AjOUE.Arch)
             </h1>
             
-            <div class="mt-2 md:mt-4 mb-2">
+            <div class="mt-2 md:mt-4 mb-3">
                 <input type="text" id="searchInput" placeholder="พิมพ์ค้นหาคลิป หรือชื่อ Playlist (เช่น Case Study, Design)..." 
                        class="w-full bg-gray-100 border border-transparent focus:bg-white focus:border-red-400 rounded-lg px-4 py-1.5 md:py-2.5 text-sm md:text-base outline-none transition shadow-inner">
             </div>
 
-            <div class="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 mb-2">
-                <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase shrink-0 hidden md:block">คำค้นหายอดฮิต :</span>
+            <div class="flex items-start gap-2 mb-3">
+                <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase shrink-0 mt-1 md:mt-1.5">ยอดฮิต :</span>
                 <div id="keywordContainer" class="flex flex-wrap gap-1.5 md:gap-2">
                     </div>
             </div>
 
-            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pt-2 border-t border-gray-100">
-                <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase shrink-0">สารบัญ :</span>
-                <div id="quickLinksContainer" class="flex gap-1.5 shrink-0 pb-1">
+            <div class="flex items-start gap-2 pt-2 border-t border-gray-100">
+                <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase shrink-0 mt-1">สารบัญ :</span>
+                <div id="quickLinksContainer" class="flex flex-wrap gap-1.5 md:gap-2 pb-1">
                     </div>
             </div>
 
@@ -55,13 +55,12 @@
     <script>
         const API_KEY = 'AIzaSyBU629gf0es1XZzU2enRKbOwjxxAqZpsgs'; 
         const CHANNEL_ID = 'UCnZEhE3iRB_y7ZPb-qlmzdA';
-        // รหัส Playlist ของวิดีโออัปโหลดทั้งหมด (เปลี่ยน UC เป็น UU)
         const UPLOADS_PLAYLIST_ID = 'UUnZEhE3iRB_y7ZPb-qlmzdA'; 
         
         let allPlaylistsData = []; 
-        const keywords = ['Case Study', 'Design', 'Space', 'Thesis', 'Lecture', 'Interior', 'Presentation', 'Vlog'];
+        // อัปเดตคำค้นหาตามที่อาจารย์ต้องการ
+        const keywords = ['Design', 'Case study', 'Space', 'Presentation', 'Thesis', 'Interior', 'Urban', 'Construction'];
 
-        // ฟังก์ชันดึงข้อมูลแบบทะลุ 50 คลิป
         async function fetchAllPages(urlPart) {
             let items = [];
             let nextPageToken = '';
@@ -77,7 +76,6 @@
 
         async function fetchYouTubeData() {
             try {
-                // 1. ดึง Playlist ทั้งหมดในช่อง
                 const playlistItems = await fetchAllPages(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=${CHANNEL_ID}`);
                 
                 if (playlistItems.length === 0) {
@@ -85,10 +83,8 @@
                     return;
                 }
 
-                // เก็บ ID วิดีโอทั้งหมดที่อยู่ใน Playlist แล้ว
                 const videosInPlaylists = new Set();
 
-                // 2. ดึงวิดีโอในแต่ละ Playlist
                 for (const playlist of playlistItems) {
                     const playlistId = playlist.id;
                     const playlistTitle = playlist.snippet.title;
@@ -97,9 +93,8 @@
 
                     const videos = rawVideos.map(item => {
                         const videoId = item.snippet.resourceId.videoId;
-                        videosInPlaylists.add(videoId); // จำไว้ว่าคลิปนี้มีหมวดหมู่แล้ว
+                        videosInPlaylists.add(videoId); 
                         
-                        // ตัด Description เอาเฉพาะข้อความก่อนการเคาะบรรทัด (Enter)
                         let desc = (item.snippet.description || '').split('\n')[0].trim();
                         if (!desc) desc = 'ไม่มีคำอธิบายเพิ่มเติม';
 
@@ -124,13 +119,11 @@
                     }
                 }
 
-                // 3. ดึงคลิป "อื่นๆ" (ที่ไม่ได้อยู่ใน Playlist ไหนเลย)
                 const allUploads = await fetchAllPages(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${UPLOADS_PLAYLIST_ID}`);
                 const orphanVideos = [];
 
                 allUploads.forEach(item => {
                     const videoId = item.snippet.resourceId.videoId;
-                    // ถ้าคลิปนี้ยังไม่มี Playlist
                     if (!videosInPlaylists.has(videoId) && item.snippet.title !== 'Private video' && item.snippet.title !== 'Deleted video') {
                         let desc = (item.snippet.description || '').split('\n')[0].trim();
                         if (!desc) desc = 'ไม่มีคำอธิบายเพิ่มเติม';
@@ -155,7 +148,6 @@
                     });
                 }
 
-                // เรียงลำดับ Playlist ตามตัวอักษร (เอา "อื่นๆ" ไว้ล่างสุด)
                 allPlaylistsData.sort((a, b) => {
                     if(a.categoryName === 'หมวดอื่นๆ (คลิปทั่วไป)') return 1;
                     if(b.categoryName === 'หมวดอื่นๆ (คลิปทั่วไป)') return -1;
@@ -208,19 +200,16 @@
             });
         }
 
-        // ระบบคลิกการ์ด: คลิก 1 โชว์รายละเอียด -> คลิก 2 เปิดวิดีโอ
         window.handleCardClick = function(element, url) {
             const descDiv = element.querySelector('.video-desc');
             const btnText = element.querySelector('.btn-text');
             
             if (descDiv.classList.contains('hidden')) {
-                // ครั้งแรก: เปิด Description
                 descDiv.classList.remove('hidden');
                 btnText.innerHTML = 'คลิกอีกครั้งเพื่อเล่นคลิป ▶';
                 btnText.classList.remove('bg-black/80', 'text-white');
                 btnText.classList.add('bg-red-600', 'text-white', 'font-bold', 'animate-pulse');
             } else {
-                // ครั้งที่สอง: ไปที่ YouTube
                 window.open(url, '_blank');
             }
         };
@@ -234,11 +223,9 @@
             allPlaylistsData.forEach(playlist => {
                 let filteredVideos = [];
 
-                // 1. ถ้าค้นหาเจอ "ชื่อ Playlist" ให้แสดงคลิปทั้งหมดในหมวดนั้นเลย
                 if (playlist.categoryName.toLowerCase().includes(searchText)) {
                     filteredVideos = playlist.videos;
                 } else {
-                    // 2. ถ้าไม่ตรงชื่อ Playlist ให้ไปค้นในชื่อคลิป
                     filteredVideos = playlist.videos.filter(v => 
                         v.title.toLowerCase().includes(searchText)
                     );
@@ -248,8 +235,8 @@
 
                 const sectionDiv = document.createElement('div');
                 sectionDiv.id = playlist.id; 
-                // scroll-mt-40 หรือ 48 เพื่อให้เวลาโดดมาแล้ว ไม่โดน Header ด้านบนบัง
-                sectionDiv.className = 'scroll-mt-48 md:scroll-mt-40 pt-2'; 
+                // เพิ่มระยะขอบบนเผื่อความสูงของแถบเมนู (Sticky Header) ที่มันยาวขึ้นเพราะ Wrap
+                sectionDiv.className = 'scroll-mt-56 md:scroll-mt-48 pt-2'; 
                 
                 const headerDiv = document.createElement('div');
                 headerDiv.className = 'flex items-baseline gap-2 md:gap-3 mb-3 md:mb-4 border-b-2 border-red-500 pb-1.5 md:pb-2 inline-block';
@@ -265,7 +252,6 @@
                     const dateStr = video.publishedAt.toLocaleDateString('th-TH', { year: '2-digit', month: 'short', day: 'numeric' });
 
                     const videoCard = document.createElement('div');
-                    // ใช้ onclick แทน a href เพื่องทำระบบ 2 clicks
                     videoCard.setAttribute('onclick', `handleCardClick(this, '${video.url}')`);
                     videoCard.className = 'group cursor-pointer flex flex-col bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-gray-100 h-full';
                     
